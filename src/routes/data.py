@@ -22,5 +22,8 @@ async def upload_data(project_id :str ,file :UploadFile ,app_settings :Settings 
     #accepted types of the types
     #split the riuters from the logic that should be done thats why the logic will be written in another file
 
-    is_valid=DataController().validate_uploaded_file(file=file)
-    return is_valid
+    is_valid ,result_signal=DataController().validate_uploaded_file(file=file)
+    # return is_valid
+    return {
+        "signal":result_signal
+    }
