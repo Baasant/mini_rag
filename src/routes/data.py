@@ -7,6 +7,9 @@ from helpers.config import get_settings ,Settings
 from controllers import DataController,ProjectController
 import aiofiles
 from models import ResponseSignal
+import logging 
+logger=logging.getLogger('uvicorn.error')
+
 data_router = APIRouter(
     prefix="/api/v1/data",
     # tag name 
@@ -22,8 +25,8 @@ async def upload_data(project_id :str ,file :UploadFile ,app_settings :Settings 
     #max size of the files 
     #accepted types of the types
     #split the riuters from the logic that should be done thats why the logic will be written in another file
-
-    is_valid ,result_signal=DataController().validate_uploaded_file(file=file)
+    data_controller=DataController()
+    is_valid ,result_signal=data_controller.validate_uploaded_file(file=file)
     # return is_valid
     if not is_valid:
         return JSONResponse(
@@ -34,18 +37,30 @@ async def upload_data(project_id :str ,file :UploadFile ,app_settings :Settings 
         )
     
     project_dir_path=ProjectController().get_project_path(project_id=project_id)
-    file_path=os.path.join(
-        project_dir_path,file.filename
-    )
+    file_path=data_controller.generate_unique_filename(orig_file_name=file.filename,project_id=project_id)
+    # file_path=os.path.join(
+    #     project_dir_path,
+    #     file.filename
+    # )
+    try:
+        async with aiofiles.open(file_path,"wb") as f :
+            while chuck:=await file.read(app_settings.FILE_DEFAULT_CHUNK_SIZE):
+                await f.write(chuck)
+        return JSONResponse(
+            content={
+                "signal":ResponseSignal.FILE_UPLOAD_SUCESS.value
+            }
+        )
+    except Exception as e:
+        logger.error(f"Error while uploading file: {e}")
 
-    async with aiofiles.open(file_path,"wb") as f :
-        while chuck:=await file.read(app_settings.FILE_DEFAULT_CHUNK_SIZE):
-            await f.write(chuck)
-    return JSONResponse(
-        content={
-            "signal":ResponseSignal.FILE_UPLOAD_SUCESS.value
-        }
-    )        
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={
+                "signal":ResponseSignal.FILE_UPLOADED_FILED.value
+            }
+        )
+
     # return {
     #     "signal":result_signal
     # }
