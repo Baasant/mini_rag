@@ -9,7 +9,7 @@ import aiofiles
 from models import ResponseSignal
 import logging 
 logger=logging.getLogger('uvicorn.error')
-
+from .schemes.data import ProcessRequest
 data_router = APIRouter(
     prefix="/api/v1/data",
     # tag name 
@@ -67,3 +67,7 @@ async def upload_data(project_id :str ,file :UploadFile ,app_settings :Settings 
     #     "signal":result_signal
     # }
 
+@data_router.post("/process/{project_id}")
+async def process_endpoint(project_id:str,process_request:ProcessRequest):
+    file_id=process_request.file_id
+    return file_id
