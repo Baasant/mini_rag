@@ -13,11 +13,15 @@ class DataController(BaseController):
         self.size_scale=1048576
     
     def validate_uploaded_file(self,file :UploadFile):
+        print(f"ALLOWED_TYPES = {self.app_settings.FILE_ALLOWED_TYPES}")
+        print(f"UPLOADED_TYPE = {file.content_type}")
+        print(f"FILENAME = {file.filename}")
         if file.content_type not in self.app_settings.FILE_ALLOWED_TYPES:
             return False ,ResponseSignal.FILE_TYPE_NOT_SUPPORTED.value
         if file.size > self.app_settings.FIle_MAX_SIZE*self.size_scale:
             return False , ResponseSignal.FILE_SIZE_EXCEEDED.value
         return True ,ResponseSignal.FILE_VALIDATED_SUCCESS.value
+    
     #generate unique_filename for the uploaded files
     def generate_unique_filepath(self,orig_file_name:str,project_id:str):
         random_key=self.generate_random_string()

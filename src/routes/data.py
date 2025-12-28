@@ -26,6 +26,7 @@ async def upload_data(project_id :str ,file :UploadFile ,app_settings :Settings 
     #accepted types of the types
     #split the riuters from the logic that should be done thats why the logic will be written in another file
     data_controller=DataController()
+    print("file is ****************************************************",file)
     is_valid ,result_signal=data_controller.validate_uploaded_file(file=file)
     # return is_valid
     if not is_valid:
@@ -66,16 +67,22 @@ async def upload_data(project_id :str ,file :UploadFile ,app_settings :Settings 
     # return {
     #     "signal":result_signal
     # }
+    return JSONResponse(
+        content={
+            "signal": ResponseSignal.FILE_UPLOAD_SUCCESS.value,
+            "file_id": file_id
+        }
+    )
 
 @data_router.post("/process/{project_id}")
 async def process_endpoint(project_id:str,process_request:ProcessRequest):
     file_id=process_request.file_id
     process_controller=ProcessController(project_id=project_id)
-    file_content=process_controller.get_file_content(file_id=file_id)
+    file_content = process_controller.get_file_content(file_id=file_id)
     chuck_size=process_request.chunck_size
     overlap_size=process_request.overlap_size
 
-    file_chuncks=process_controller.process_file_content(file_content=file_chuncks,file_id=file_id,
+    file_chuncks=process_controller.process_file_content(file_content=file_content,file_id=file_id,
                                                          chunck_size=chuck_size,overlap_size=overlap_size)
 
     if file_chuncks is None or len(file_chuncks)==0:
