@@ -47,12 +47,12 @@ async def upload_data(project_id :str ,file :UploadFile ,app_settings :Settings 
         async with aiofiles.open(file_path,"wb") as f :
             while chuck:=await file.read(app_settings.FILE_DEFAULT_CHUNK_SIZE):
                 await f.write(chuck)
-        return JSONResponse(
-            content={
-                "signal":ResponseSignal.FILE_UPLOAD_SUCESS.value,
-                 "file_id":file_id
-            }
-        )
+        # return JSONResponse(
+        #     content={
+        #         "signal":ResponseSignal.FILE_UPLOAD_SUCESS.value,
+        #          "file_id":file_id
+        #     }
+        # )
     except Exception as e:
         logger.error(f"Error while uploading file: {e}")
 
@@ -69,7 +69,7 @@ async def upload_data(project_id :str ,file :UploadFile ,app_settings :Settings 
     # }
     return JSONResponse(
         content={
-            "signal": ResponseSignal.FILE_UPLOAD_SUCCESS.value,
+            "signal": ResponseSignal.FILE_UPLOAD_SUCESS.value,
             "file_id": file_id
         }
     )
