@@ -1,12 +1,13 @@
 #route to upload data 
 #split the riuters from the logic that should be done 
-from fastapi import FastAPI ,APIRouter,Depends ,UploadFile,status
+from fastapi import FastAPI ,APIRouter,Depends ,UploadFile,status,Request
 from fastapi.responses import JSONResponse
 import os
 from helpers.config import get_settings ,Settings
 from controllers import DataController,ProjectController,ProcessController
 import aiofiles
 from models import ResponseSignal
+from models.ProjectModel import ProjectModel
 import logging 
 logger=logging.getLogger('uvicorn.error')
 from .schemes.data import ProcessRequest
@@ -20,11 +21,16 @@ data_router = APIRouter(
 @data_router.post("/upload/{project_id}")
 #function o the end point 
 # defin project as string becouse there no mathmaticla operation will be done
-async def upload_data(project_id :str ,file :UploadFile ,app_settings :Settings =Depends(get_settings)):
+async def upload_data(request:Request,project_id :str ,file :UploadFile ,app_settings :Settings =Depends(get_settings)):
     #make some validation for the uploaded files before accept it 
     #max size of the files 
     #accepted types of the types
     #split the riuters from the logic that should be done thats why the logic will be written in another file
+    project_model=ProjectModel(
+    db_client=request.app.db_client  
+    )
+
+    project=await project_model.get_project_or_create_one(project_id=project_id)
     data_controller=DataController()
     print("file is ****************************************************",file)
     is_valid ,result_signal=data_controller.validate_uploaded_file(file=file)
@@ -70,7 +76,8 @@ async def upload_data(project_id :str ,file :UploadFile ,app_settings :Settings 
     return JSONResponse(
         content={
             "signal": ResponseSignal.FILE_UPLOAD_SUCESS.value,
-            "file_id": file_id
+            "file_id": file_id,
+            "project_id":str(project._id)
         }
     )
 
