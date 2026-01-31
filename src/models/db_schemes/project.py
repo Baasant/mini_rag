@@ -3,7 +3,7 @@ from typing import Optional
 from bson import ObjectId
 
 class Project(BaseModel):
-    _id : Optional[ObjectId] 
+    id: Optional[ObjectId] = Field(alias='_id', default=None)
     project_id : str=Field(..., min_length=1)
     @validator('project_id')
     def validate_project_id(cls,value):
@@ -11,5 +11,7 @@ class Project(BaseModel):
             raise ValueError("project_id must be alphanumeric")
         return value
     class Config:
-         arbitrary_types_allowed = True
+        arbitrary_types_allowed = True
+        json_encoders = {ObjectId: str}
+        allow_population_by_field_name = True
 

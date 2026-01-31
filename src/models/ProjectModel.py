@@ -10,8 +10,8 @@ class ProjectModel(BaseDataModel):
     #functions to make ssome operation onthe data
 
     async def create_project(self,project:Project):
-        result=await self.collenction.insert_one(project.dict()) #to wait till it connect the data
-        project._id=result.inserted_id
+        result=await self.collenction.insert_one(project.dict(by_alias=True,exclude_unset=True)) #to wait till it connect the data
+        project.id=result.inserted_id
         return project
     
     async def get_project_or_create_one(self,project_id:str):
